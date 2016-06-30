@@ -1,0 +1,232 @@
+use Libraries.Compute.Random
+use Libraries.Sound.Music
+
+class Main
+    Random ran
+    Music muse
+
+    integer iCoins = 0
+    boolean playAgain = true
+    integer myCoins = 10
+    integer won = 0
+
+    action Main
+    Welcome()
+    
+       
+        say "How many coins you would like to use for this run? You can only use up to ten coins for one run. Enter the number and press enter."
+        
+        repeat until playAgain = false or myCoins = 0
+        
+        iCoins = 0
+       
+            repeat until iCoins >= 1 and iCoins <= 10 and iCoins <= myCoins
+                text coins = input("How many coins you would like to use for this run?")
+                iCoins = cast(integer, coins)
+                if iCoins >= 1 and iCoins <= 10 and iCoins <= myCoins
+                    say "You put " + iCoins + " coins in the machine."
+                    
+                elseif iCoins >= 1 and iCoins <= 10 and iCoins > myCoins
+                    say "You do not have that many coins left. Enter the number again."
+                else
+                    say "Error. Enter the number between 1 and 10"
+                end
+            end
+
+            Machine()
+
+            myCoins = myCoins - iCoins
+            myCoins = myCoins + won
+            say "You have " +myCoins+ " coins now"
+            if myCoins > 0
+                say "Do you want to play again?"
+
+                text again = ""
+                repeat until again = "y" or again = "n"
+                again = input ("Enter y or n")
+
+                    if again = "y"
+                        playAgain = true
+                        say "OK. Enter number of coins and press enter."
+                    elseif again = "n"
+                        playAgain = false
+                    else
+                        say "Error. enter y or n."
+                    end
+                end
+
+            elseif myCoins <= 0
+                say "Sorry you have lost all coins. Maybe next time."
+                palyAgain = false
+            end
+        end
+        
+        say "Thank you for playing. I hope you had a fun."
+    end
+    
+    action Welcome
+        say "Welcome to audio probability machine game. You will be asked to enter the amount of virtual coin you want to use each time. At the beginning, you have ten coins. Then you will run the machine. Based on the outcome of the three digits, you will be rewarded by the virtual coin accordingly. Two of the same digit is Win. You will  be rewarded with the three times the amount of the virtual coin you used for that run. Three of the same digit is Jackpot. You will be rewarded with one hundred times the amount. If the three identical digit is number seven, it is a Super Jackpot. You will be rewarded with one thousand times the amount."
+    end
+
+    action Machine
+        WheelSound()
+        integer fDigit = FirstWheel()
+        say "Your first digit is " + fDigit
+        WheelSound()
+        integer sDigit = SecondWheel()
+        say "Your second didgit is " + sDigit
+        WheelSound()
+        integer tDigit = ThirdWheel()
+        say "Your third digit is " + tDigit
+
+        text result = WinOrLoss(fDigit, sDigit, tDigit)
+
+        Announcement(result)
+
+        integer winning = WinningCalc(iCoins, result)
+
+        WinningGetter(winning)
+
+        say "You got " + winning + " coins back for this run."
+    end
+
+    action FirstWheel returns integer
+        integer firstDigit = ran:RandomIntegerBetween(0, 9)
+        return firstDigit
+    end
+
+    action SecondWheel returns integer
+        integer secondDigit = ran:RandomIntegerBetween(0, 9)
+        return secondDigit
+    end
+
+    action ThirdWheel returns integer
+        integer thirdDigit = ran:RandomIntegerBetween(0, 9)
+        return thirdDigit
+    end
+
+    action WheelSound
+        muse:Play(60, 0.1)
+        muse:Play(61, 0.1)
+        muse:Play(62, 0.1)
+        muse:Play(63, 0.1)
+        muse:Play(60, 0.1)
+        muse:Play(61, 0.1)
+        muse:Play(62, 0.1)
+        muse:Play(63, 0.1)
+    end
+
+    action WinningSound
+        muse:Play(65, 0.1)
+        muse:Play(66, 0.1)
+        muse:Play(67, 0.1)
+        muse:Play(68, 0.1)
+        muse:Play(69, 0.1)
+        muse:Play(70, 0.1)
+        muse:Play(71, 0.1)
+        muse:Play(72, 0.1)
+        muse:Play(73, 0.5)
+    end
+
+    action LosingSound
+        muse:Play(73, 0.1)
+        muse:Play(72, 0.1)
+        muse:Play(71, 0.1)
+        muse:Play(70, 0.1)
+        muse:Play(69, 0.1)
+        muse:Play(68, 0.1)
+        muse:Play(67, 0.1)
+        muse:Play(66, 0.1)
+        muse:Play(65, 0.5)
+    end
+
+    action JackpotSound
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.1)
+        muse:Play(73, 0.5)
+    end
+
+    action SuperJpSound
+        muse:Play(60, 0.1)
+        muse:Play(64, 0.1)
+        muse:Play(67, 0.1)
+        muse:Play(72, 0.2)
+        muse:Play(67, 0.1)
+        muse:Play(72, 0.5)
+        muse:Play(76, 0.1)
+        muse:Play(76, 0.1)
+        muse:Play(76, 0.1)
+        muse:Play(76, 0.1)
+        muse:Play(76, 0.1)
+        muse:Play(76, 0.1)
+    end
+
+    action WinOrLoss (integer first, integer second, integer third) returns text
+        text outcome = ""
+        if first = second and second < third
+            outcome = "W"
+        elseif first = second and second > third
+            outcome = "W"
+        elseif second = third and first < second
+            outcome = "W"
+        elseif second = third and first > second
+            outcome = "W"
+        elseif first = third and third > second
+            outcome = "W"
+        elseif first = third and third < second
+            outcome = "W"
+        elseif first = second and second = third
+            if first = 7
+                outcome = "SJP"
+            else
+                outcome = "JP"
+            end
+        else
+            outcome = "L"
+        end
+        
+        return outcome
+    end
+
+    action Announcement(text outcome)
+        if outcome = "W"
+            WinningSound()
+            say "You Win! You got a two of the same number on this run."
+        elseif outcome = "JP"
+            JackpotSound()
+            say "You got a Jackpot! Three same numbers in a row."
+        elseif outcome = "SJP"
+            SuperJpSound()
+            say "You got a Super Jackpot! Three sevens in a row."
+        elseif outcome = "L"
+            LosingSound()
+            say "You lost your coins."
+        end
+    end
+
+    action WinningCalc(integer coins, text outcome) returns integer
+        integer reward = 0
+        if outcome = "L"
+            rewawrd = coins * 0
+        elseif outcome = "W"
+            reward = coins * 3
+        elseif outcome = "JP"
+            reward = coins * 100
+        elseif outcome = "SJP"
+            reward = coins * 1000
+        end
+        
+        return reward
+    end
+   
+    action WinningGetter(integer winning)
+        won = winning
+    end
+       
+end
